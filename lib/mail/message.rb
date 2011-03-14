@@ -1167,6 +1167,26 @@ module Mail
         body.encoding = value
     end
 
+    # Set the value by passing a value as a parameter which corresponds to
+    # "RCPT TO:" statement of SMTP.
+    #
+    # Example:
+    #
+    #  mail.rcpt_to 'mikel@test.lindsaar.net'
+    #  mail.rcpt_to #=> ['mikel@test.lindsaar.net']
+    #
+    # This method is used in the case you want to "forward" a message
+    # without changing its to and cc fields.
+    def rcpt_to(rcpt = nil)
+      @rcpt_to = [] unless @rcpt_to
+      
+      if rcpt
+        @rcpt_to << rcpt
+      end
+      
+      @rcpt_to
+    end
+
     # Returns the list of addresses this message should be sent to by
     # collecting the addresses off the to, cc and bcc fields.
     #
@@ -1177,8 +1197,14 @@ module Mail
     #  mail.bcc = 'bob@test.lindsaar.net'
     #  mail.destinations.length #=> 3
     #  mail.destinations.first #=> 'mikel@test.lindsaar.net'
+    #  mail.rcpt_to 'matsumoto@soutaro.com'
+    #  mail.destinations # => ['matsumoto@soutaro.com']
     def destinations
-      [to_addrs, cc_addrs, bcc_addrs].compact.flatten
+      if self.rcpt_to.empty?
+        [to_addrs, cc_addrs, bcc_addrs].compact.flatten
+      else
+        self.rcpt_to
+      end
     end
 
     # Returns an array of addresses (the encoded value) in the From field,
